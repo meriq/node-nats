@@ -267,6 +267,7 @@ The following is the list of connection options and default values.
 
 | Option                 | Aliases                                      | Default                   | Description
 |--------                |---------                                     |---------                  |------------
+| `echo`                 |                                              | `true`                    | Subscriptions receive messages published by the client. Requires server support (1.2.0). If set to false, and the server doesn't support the feature, an error with code `NATS_PROTOCOL_ERR` is emitted, and the connection is aborted. Note that it is possible for this error to be emitted on reconnect when the server reconnects to a server that does not support the feature.
 | `encoding`             |                                              | `"utf8"`                  | Encoding specified by the client to encode/decode data
 | `json`                 |                                              | `false`                   | If true, message payloads are converted to/from JSON
 | `maxPingOut`           |                                              | `2`                       | Max number of pings the client will allow unanswered before rasing a stale connection error

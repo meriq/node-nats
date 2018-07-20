@@ -36,7 +36,6 @@ export const PERMISSIONS_ERR: string;
 export const REQ_TIMEOUT: string;
 export const SECURE_CONN_REQ: string;
 export const STALE_CONNECTION_ERR: string;
-
 /**
  * Create a properly formatted inbox subject.
 */
@@ -84,7 +83,8 @@ export interface ClientOpts {
 	token?: string,
 	pingInterval?: number,
 	maxPingOut?: number,
-	useOldRequestStyle?: boolean
+	useOldRequestStyle?: boolean,
+	echo?: boolean
 }
 
 export interface SubscribeOptions {

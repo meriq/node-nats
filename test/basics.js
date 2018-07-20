@@ -17,6 +17,7 @@
 /* global describe: false, before: false, after: false, it: false */
 'use strict';
 
+
 var NATS = require('../'),
     nsc = require('./support/nats_server_control'),
     should = require('should');
@@ -501,5 +502,43 @@ describe('Basics', function() {
     it('old requestOne: optional param transpositions', function (done) {
         var nc = NATS.connect({port: PORT, useOldRequestStyle: true});
         paramTranspositions(nc, done);
+    });
+
+    it('echo false is honored', function(done) {
+        var nc1 = NATS.connect({port: PORT, echo: false, name: "no echo client"});
+        nc1.on('error', function(err) {
+            if(err.code === NATS.NATS_PROTOCOL_ERR) {
+                nc1 = null;
+                done();
+            }
+        });
+
+        nc1.flush(function() {
+            var subj = NATS.createInbox();
+
+            var count = 0;
+            nc1.subscribe(subj, function () {
+                count++;
+            });
+
+            var nc2 = NATS.connect({port: PORT, name: "default client"});
+            nc2.on('connect', function() {
+                nc2.subscribe(subj, function() {
+                    count++;
+                });
+            });
+
+            nc2.flush(function() {
+                nc1.publish(subj);
+                nc2.flush(function() {
+                    nc1.flush(function() {
+                        should(count).be.equal(1);
+                        nc1.close();
+                        nc2.close();
+                        done();
+                    });
+                });
+            });
+        });
     });
 });
