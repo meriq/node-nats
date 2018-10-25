@@ -1,7 +1,11 @@
 module.exports = {
+    "parserOptions": {
+        "ecmaVersion": 2017
+    },
     "env": {
         "mocha": true,
-        "node": true
+        "node": true,
+        "es6": true,
     },
     "extends": "eslint:recommended",
     "rules": {

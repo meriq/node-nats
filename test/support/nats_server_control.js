@@ -42,6 +42,13 @@ function start_server(port, opt_flags, done) {
     }
 
     var server = spawn(SERVER, flags);
+    // server.stderr.on('data', function (data) {
+    //     console.log(flags.join(" "));
+    //     var lines = data.toString().split('\n');
+    //     lines.forEach((m) => {
+    //         console.log(m);
+    //     });
+    // });
 
     var start = new Date();
     var wait = 0;
@@ -107,7 +114,7 @@ function start_server(port, opt_flags, done) {
 
     // Server does not exist..
     server.stderr.on('data', function(data) {
-        if (/^execvp\(\)/.test(data)) {
+        if ((/^execvp\(\)/).test(data)) {
             clearInterval(timer);
             finish(new Error('Can\'t find the ' + SERVER));
         }

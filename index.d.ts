@@ -85,6 +85,21 @@ export interface ClientOpts {
 	pingInterval?: number,
 	maxPingOut?: number,
 	useOldRequestStyle?: boolean
+	authHandler?: AuthHandler
+}
+
+export interface NKeyAuthChallenge {
+	sig: Buffer;
+	nkey: string;
+}
+
+export interface ChallengeSigner {
+	(data: Buffer): Buffer
+}
+
+export interface AuthHandler {
+	sign: ChallengeSigner;
+	id: string
 }
 
 export interface SubscribeOptions {

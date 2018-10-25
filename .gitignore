@@ -16,3 +16,4 @@ xunit.xml
 logs/*
 reports/*
 tmp/*
+benchmark/*
