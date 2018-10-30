@@ -29,35 +29,55 @@ var NATS = require('../'),
     nkeys = require('ts-nkeys');
 
 
-describe('Auth Basics', function() {
+describe('NKEY Auth Basics', function() {
 
     var PORT = 6588;
     var server;
     var userKeyPair, userSeed, userPublicKey;
+    var skip = false;
 
     // Start up our own nats-server
     before(function(done) {
-        userKeyPair = nkeys.createUser();
-        userSeed = userKeyPair.getSeed();
-        userPublicKey = userKeyPair.getPublicKey();
+        nsc.server_version(function(version) {
+            var ver = version.split(".");
+            for (var i = 0; i < ver.length; i++) {
+                ver[i] = parseInt(ver[i], 10);
+            }
 
-        var conf = {
-            authorization: {
-                users: [{ nkey: userPublicKey }]
+            skip = ver[1] < 3 && ver[2] === 0;
+            if (skip) {
+                console.log('NKEY tests will be skipped, server version', ver);
+                done();
+                return;
             }
-        };
-        var cf = path.resolve(os.tmpdir(), 'conf-' + nuid.next() + '.conf');
-        fs.writeFile(cf, ncu.j(conf), function(err) {
-            if(err) {
-                done(err);
-            } else {
-                server = nsc.start_server(PORT, ['-c', cf], done);
-            }
+
+            userKeyPair = nkeys.createUser();
+            userSeed = userKeyPair.getSeed();
+            userPublicKey = userKeyPair.getPublicKey();
+
+            var conf = {
+                authorization: {
+                    users: [{ nkey: userPublicKey }]
+                }
+            };
+            var cf = path.resolve(os.tmpdir(), 'conf-' + nuid.next() + '.conf');
+            fs.writeFile(cf, ncu.j(conf), function(err) {
+                if(err) {
+                    done(err);
+                } else {
+                    server = nsc.start_server(PORT, ['-c', cf], done);
+                }
+            });
         });
+
     });
 
     // Shutdown our server
     after(function(done) {
+        if(skip) {
+            done();
+            return;
+        }
         nsc.stop_server(server, done);
     });
 
@@ -71,8 +91,11 @@ describe('Auth Basics', function() {
     }
 
     it('sign in using nkeys', function(done) {
+        if (skip) {
+            done();
+            return;
+        }
         var ah = signer(userKeyPair);
-
         var nc = NATS.connect({
             port: PORT,
             authHandler: ah
@@ -87,6 +110,10 @@ describe('Auth Basics', function() {
     });
 
     it('bad user', function(done) {
+        if(skip) {
+            done();
+            return;
+        }
         var kp = nkeys.createUser();
         var ah = signer(kp);
 
@@ -104,6 +131,10 @@ describe('Auth Basics', function() {
     });
 
     it('bad handler', function(done) {
+        if(skip) {
+            done();
+            return;
+        }
         var ah = {};
         ah.sign = function() {
             throw new Error("testing error");

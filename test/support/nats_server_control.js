@@ -42,13 +42,15 @@ function start_server(port, opt_flags, done) {
     }
 
     var server = spawn(SERVER, flags);
-    // server.stderr.on('data', function (data) {
-    //     console.log(flags.join(" "));
-    //     var lines = data.toString().split('\n');
-    //     lines.forEach((m) => {
-    //         console.log(m);
-    //     });
-    // });
+    if (process.env.PRINT_SERVER_OUTPUT) {
+        server.stderr.on('data', function (data) {
+            console.log(flags.join(" "));
+            var lines = data.toString().split('\n');
+            lines.forEach((m) => {
+                console.log(m);
+            });
+        });
+    }
 
     var start = new Date();
     var wait = 0;
@@ -234,4 +236,24 @@ exports.find_server = function(port, servers) {
   return servers.find(function(s) {
     return s.spawnargs[2] === port;
   });
+};
+
+exports.server_version = function(callback) {
+    var server = spawn(SERVER, ['version']);
+    server.stdout.on('data', function (data) {
+        var lines = data.toString().split('\n');
+        lines.forEach((m) => {
+            var versionHeader = 'nats-server version ';
+            var start = m.indexOf(versionHeader);
+            if(start !== -1) {
+                callback(m.substr(start+versionHeader.length));
+            }
+        });
+    });
+
+    server.on('exit', function(code, signal) {
+        if(code !== 0) {
+            console.log("server exited. code:", code, "signal:", signal);
+        }
+    });
 };
